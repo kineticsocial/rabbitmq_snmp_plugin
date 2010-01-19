@@ -1,0 +1,1 @@
+-record(rabbit_snmp_queue, {index, name, vhost, messages}).

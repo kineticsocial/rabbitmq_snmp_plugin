@@ -1,0 +1,238 @@
+RABBITMQ-MIB DEFINITIONS ::= BEGIN
+
+--
+-- Top-level infrastructure of the Epic Ads enterprise MIB tree
+--
+
+IMPORTS
+	MODULE-IDENTITY, OBJECT-TYPE, Gauge32, Counter64, enterprises FROM SNMPv2-SMI
+
+	OBJECT-GROUP FROM SNMPv2-CONF
+
+	DisplayString, TruthValue FROM SNMPv2-TC;
+
+	rabbitMQ MODULE-IDENTITY
+		LAST-UPDATED "200911040000Z"
+		ORGANIZATION "www.epicadvertising.com"
+		CONTACT-INFO
+			"e-mail:	 scott.brooks@epicadvertising.com"
+		DESCRIPTION
+			"RabbitMQ snmp mib"
+		REVISION		 "200911040000Z"
+		DESCRIPTION
+			"First draft"
+		::= { enterprises 12346}
+
+rabbitGroups OBJECT IDENTIFIER ::= { rabbitMQ 1 }
+vhosts OBJECT IDENTIFIER ::= { rabbitMQ 2 }
+queues OBJECT IDENTIFIER ::= { rabbitMQ 3 }
+exchanges OBJECT IDENTIFIER ::= { rabbitMQ 4 }
+
+vhostTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF VhostEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "list of vhosts"
+	::= { vhosts 1 }
+
+vhostTableEntry OBJECT-TYPE
+	SYNTAX VhostEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "vhost entry"
+	INDEX { vhostName }
+	::= { vhostTable 1 }
+
+VhostEntry ::= SEQUENCE {
+	vhostName	DisplayString
+}
+
+vhostName OBJECT-TYPE
+	SYNTAX DisplayString
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Vhost name"
+	::= { vhostTableEntry 1 }
+
+queueTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF QueueStatisticsEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION "A list of all the queues for a specific vhost"
+	::= { queues 1 }
+
+queueTableEntry	OBJECT-TYPE
+	SYNTAX	QueueStatisticsEntry
+	MAX-ACCESS	not-accessible
+	STATUS	current
+	DESCRIPTION "A queue"
+	INDEX	{ queueVhost, queueName }
+	::= { queueTable 1 }
+
+QueueStatisticsEntry ::=	SEQUENCE {
+	queueVhost				DisplayString,
+	queueName				DisplayString,
+	queueDurable			TruthValue,
+	queueAutoDelete			TruthValue,
+	queueMessages			Gauge32,
+	queueUnAcknowledged		Gauge32,
+	queueUnCommitted		Gauge32,
+	queueReady				Gauge32,
+	queueAcksUncommitted 	Gauge32,
+	queueConsumers			Gauge32,
+	queueTransactions		Gauge32,
+	queueMemory				Counter64
+}
+
+queueVhost OBJECT-TYPE
+	SYNTAX DisplayString
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Queue Vhost"
+	::= { queueTableEntry 1 }
+
+queueName OBJECT-TYPE
+	SYNTAX DisplayString
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Queue name"
+	::= { queueTableEntry 2 }
+
+queueDurable OBJECT-TYPE
+	SYNTAX TruthValue
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "True if the queue is durable"
+	::= { queueTableEntry 3 }
+
+queueAutoDelete OBJECT-TYPE
+	SYNTAX TruthValue
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "True if the queue is set to auto_delete"
+	::= { queueTableEntry 4 }
+
+queueMessages OBJECT-TYPE
+	SYNTAX Gauge32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Number of messages"
+	::= { queueTableEntry 5 }
+
+queueUnAcknowledged OBJECT-TYPE
+	SYNTAX Gauge32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Number of unacknowledged messages"
+	::= { queueTableEntry 6 }
+
+queueUnCommitted OBJECT-TYPE
+	SYNTAX Gauge32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Number of uncommitted messages"
+	::= { queueTableEntry 7 }
+
+queueReady OBJECT-TYPE
+	SYNTAX Gauge32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Number of ready messages"
+	::= { queueTableEntry 8 }
+
+queueAcksUncommitted OBJECT-TYPE
+	SYNTAX Gauge32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Number of uncommitted acks"
+	::= { queueTableEntry 9 }
+
+queueConsumers OBJECT-TYPE
+	SYNTAX Gauge32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Number of consumers"
+	::= { queueTableEntry 10 }
+
+queueTransactions OBJECT-TYPE
+	SYNTAX Gauge32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Number of transactions"
+	::= { queueTableEntry 11 }
+
+queueMemory OBJECT-TYPE
+	SYNTAX Counter64
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Amount of memory used"
+	::= { queueTableEntry 12 }
+
+exchangeTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF ExchangeEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "list of exchanges"
+	::= { exchanges 1 }
+
+exchangeTableEntry OBJECT-TYPE
+	SYNTAX ExchangeEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "exchange entry"
+	INDEX { exchangeVhost, exchangeName }
+	::= { exchangeTable 1 }
+
+ExchangeEntry ::= SEQUENCE {
+	exchangeVhost		DisplayString,
+	exchangeName		DisplayString,
+	exchangeType		DisplayString,
+	exchangeDurable		TruthValue,
+	exchangeAutoDelete	TruthValue
+}
+
+exchangeVhost OBJECT-TYPE
+	SYNTAX DisplayString
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Exchange Vhost"
+	::= { exchangeTableEntry 1 }
+
+exchangeName OBJECT-TYPE
+	SYNTAX DisplayString
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Exchange name"
+	::= { exchangeTableEntry 2 }
+
+exchangeType OBJECT-TYPE
+	SYNTAX DisplayString
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Exchange Type"
+	::= { exchangeTableEntry 3 }
+
+exchangeDurable OBJECT-TYPE
+	SYNTAX TruthValue
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "True if the queue is set to durable"
+	::= { exchangeTableEntry 4 }
+
+exchangeAutoDelete OBJECT-TYPE
+	SYNTAX TruthValue
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "True if the queue is set to auto_delete"
+	::= { exchangeTableEntry 5 }
+
+
+rabbitGroup OBJECT-GROUP
+	OBJECTS {
+		queueVhost, queueName, queueDurable, queueAutoDelete, queueMessages, queueUnAcknowledged, queueUnCommitted, queueReady, queueAcksUncommitted, queueConsumers, queueTransactions, queueMemory, vhostName, exchangeVhost, exchangeType, exchangeName, exchangeDurable, exchangeAutoDelete
+	}
+	STATUS current
+	DESCRIPTION "Groups"
+	::= { rabbitGroups 1 }
+
+END
