@@ -22,6 +22,14 @@ based off of: http://www.rabbitmq.com/plugin-development.html
 
 5: Install the dist/rabbitmq-snmp.ez plugin into your server.
 
+6: Add the following to you RabbitMQ configuration (usually /etc/rabbitmq/rabbitmq.config):
+
+  {rabbit_snmp,
+   [
+    % set the desired data update interval in milliseconds
+    {update_interval, 10000}
+   ]
+  },
   {snmp, [
     {agent, [
       % db_dir will be set by the snmp plugin before it starts snmp so leave this commented out
