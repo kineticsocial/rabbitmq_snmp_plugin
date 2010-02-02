@@ -1,0 +1,1 @@
+Nothing to see here, just this file to make git create the snmp/agent/db directory for us since it doesn't store empty directories
