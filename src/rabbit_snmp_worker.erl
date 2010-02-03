@@ -48,8 +48,10 @@ create_exchange_row([Row|Rest]) ->
 create_vhost_row([]) ->
     ok;
 create_vhost_row([Row|Rest]) ->
-    SnmpRow = {binary_to_list(Row)},
-    snmpa_local_db:table_create_row(vhostTable, binary_to_list(Row), SnmpRow),
+    {Vhost, QueueCount, ExchangeCount, MessageCount} = Row,
+    ListVhost = binary_to_list(Vhost),
+    SnmpRow = {ListVhost, QueueCount, ExchangeCount, MessageCount},
+    snmpa_local_db:table_create_row(vhostTable, ListVhost, SnmpRow),
     create_vhost_row(Rest).
 
 create_queue_row([]) ->
@@ -75,14 +77,23 @@ create_queue_row([Row|Rest]) ->
     snmpa_local_db:table_create_row(queueTable, ListVhost ++ ListQueue, SnmpRow),
     create_queue_row(Rest).
 
+sum_queue_info(InfoAll, Name) ->
+    lists:foldl(fun(Props, Acc) -> Acc + proplists:get_value(Name, Props) end,
+                0,
+                InfoAll).
 
 update_stats() ->
     Vhosts = rabbit_access_control:list_vhosts(),
-    create_vhost_row(Vhosts),
-    Queues = lists:append([rabbit_amqqueue:info_all(X) || X <- Vhosts]),
-    create_queue_row(Queues),
-    Exchanges = lists:append([rabbit_exchange:list(X) || X <- Vhosts]),
-    create_exchange_row(Exchanges),
+    VhostsQueuesAndExchanges = [{X, rabbit_amqqueue:info_all(X), rabbit_exchange:list(X)} || X <- Vhosts],
+
+    VhostRows = [{X, length(Q), length(E), sum_queue_info(Q, messages)} || {X,Q,E} <- VhostsQueuesAndExchanges],
+    create_vhost_row(VhostRows),
+
+    QueueRows = lists:append([Q || {_,Q,_} <- VhostsQueuesAndExchanges]),
+    create_queue_row(QueueRows),
+
+    ExchangeRows = lists:append([E || {_,_,E} <- VhostsQueuesAndExchanges]),
+    create_exchange_row(ExchangeRows),
     ok.
 
 handle_call(_Msg,_From,State) ->
