@@ -26,7 +26,7 @@ start_link() ->
 init([]) ->
     application:start(snmp),
     UpdateInterval = case application:get_env(rabbit_snmp, update_interval) of
-        undefined -> 1000;
+        undefined -> 10000;
         Value -> Value
     end,
     io:format("Started snmp state poller w/~pms interval~n", [UpdateInterval]),
