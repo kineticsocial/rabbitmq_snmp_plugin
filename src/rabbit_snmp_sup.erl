@@ -8,10 +8,16 @@ start_link() ->
 
 init([]) ->
     {ok, {{one_for_one, 3, 10},
-            [{rabbit_snmp_worker,
+            [{rabbit_snmp_tracer,
+                    {rabbit_snmp_tracer, start_link, []},
+                    permanent,
+                    10000,
+                    worker,
+                    [rabbit_snmp_tracer]},
+            {rabbit_snmp_worker,
                     {rabbit_snmp_worker, start_link, []},
                     permanent,
                     10000,
                     worker,
                     [rabbit_snmp_worker]}
-            ]}}.
+			]}}.

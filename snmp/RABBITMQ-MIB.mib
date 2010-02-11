@@ -105,7 +105,8 @@ QueueStatisticsEntry ::=	SEQUENCE {
         queueAcksUncommitted 	Gauge32,
         queueConsumers			Gauge32,
         queueTransactions		Gauge32,
-        queueMemory				Counter64
+        queueMemory				Counter64,
+        queueMessagesDelivered  Counter64
 }
 
 queueVhost OBJECT-TYPE
@@ -192,6 +193,13 @@ queueMemory OBJECT-TYPE
         DESCRIPTION "Amount of memory used"
         ::= { queueTableEntry 12 }
 
+queueMessagesDelivered OBJECT-TYPE
+        SYNTAX Counter64
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION "Number of messages delivered to this queue"
+        ::= { queueTableEntry 13 }
+
 exchangeTable OBJECT-TYPE
         SYNTAX SEQUENCE OF ExchangeEntry
         MAX-ACCESS not-accessible
@@ -253,7 +261,7 @@ exchangeAutoDelete OBJECT-TYPE
 
 rabbitGroup OBJECT-GROUP
         OBJECTS {
-                vhostQueueCount, vhostExchangeCount, vhostMessageCount, queueVhost, queueName, queueDurable, queueAutoDelete, queueMessages, queueUnAcknowledged, queueUnCommitted, queueReady, queueAcksUncommitted, queueConsumers, queueTransactions, queueMemory, vhostName, exchangeVhost, exchangeType, exchangeName, exchangeDurable, exchangeAutoDelete
+                vhostQueueCount, vhostExchangeCount, vhostMessageCount, queueVhost, queueName, queueDurable, queueAutoDelete, queueMessages, queueUnAcknowledged, queueUnCommitted, queueReady, queueAcksUncommitted, queueConsumers, queueTransactions, queueMemory, queueMessagesDelivered, vhostName, exchangeVhost, exchangeType, exchangeName, exchangeDurable, exchangeAutoDelete
         }
         STATUS current
         DESCRIPTION "Groups"

@@ -21,11 +21,14 @@ stop(_State) ->
     stop().
 
 start_link() ->
-    gen_server:start_link({global, ?MODULE}, ?MODULE, [], []).
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
     application:start(snmp),
-    {ok, UpdateInterval} = application:get_env(rabbit_snmp, update_interval),
+    UpdateInterval = case application:get_env(rabbit_snmp, update_interval) of
+        undefined -> 1000;
+        Value -> Value
+    end,
     io:format("Started snmp state poller w/~pms interval~n", [UpdateInterval]),
     erlang:send_after(1, self(), update_stats),
     {ok, #state{update_interval = UpdateInterval}}.
@@ -60,6 +63,11 @@ create_queue_row([Row|Rest]) ->
     {resource, Vhost, queue, QueueName} = proplists:get_value(name, Row),
     ListVhost = binary_to_list(Vhost),
     ListQueue = binary_to_list(QueueName),
+    QueuePid = proplists:get_value(pid, Row),
+    MessagesSent = case gen_server:call(rabbit_snmp_tracer, {get_count, QueuePid}) of
+        no_stats -> gen_server:call(rabbit_snmp_tracer, {start_trace, QueuePid}), 0;
+        Count -> Count
+    end,
 
     SnmpRow = {ListVhost, ListQueue,
         proplists:get_value(durable, Row),
@@ -71,7 +79,8 @@ create_queue_row([Row|Rest]) ->
         proplists:get_value(acks_uncommitted, Row),
         proplists:get_value(consumers, Row),
         proplists:get_value(transactions, Row),
-        proplists:get_value(memory, Row)
+        proplists:get_value(memory, Row),
+        MessagesSent
     },
 
     snmpa_local_db:table_create_row(queueTable, ListVhost ++ ListQueue, SnmpRow),
