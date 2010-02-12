@@ -27,7 +27,7 @@ init([]) ->
     application:start(snmp),
     UpdateInterval = case application:get_env(rabbit_snmp, update_interval) of
         undefined -> 10000;
-        Value -> Value
+        {ok, Value} -> Value
     end,
     io:format("Started snmp state poller w/~pms interval~n", [UpdateInterval]),
     erlang:send_after(1, self(), update_stats),
