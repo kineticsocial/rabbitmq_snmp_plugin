@@ -30,12 +30,20 @@ init([]) ->
 
 handle_call({start_trace, Pid}, _From, State) ->
     ets:insert(State#state.table, {Pid, 0}),
-    erlang:trace(Pid, true, [{tracer, self()}, 'receive']),
+    try erlang:trace(Pid, true, [{tracer, self()}, 'receive'])
+    catch
+        error:badarg -> error_logger:warning_msg("Unable to enable trace of pid: ~p~n", [Pid]), ok;
+        _:_ -> ok
+    end,
     {reply, ok, State};
 
 handle_call({stop_trace, Pid}, _From, State) ->
     ets:delete(State#state.table, Pid),
-    erlang:trace(Pid, false, [{tracer, self()}, 'receive']),
+    try erlang:trace(Pid, false, [{tracer, self()}, 'receive'])
+    catch
+        error:badarg -> error_logger:warning_msg("Unable to disable trace of pid: ~p~n", [Pid]), ok;
+        _:_ -> ok
+    end,
     {reply, ok, State};
 
 handle_call({get_count, Pid}, _From, State) ->
