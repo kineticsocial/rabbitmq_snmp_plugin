@@ -1,4 +1,4 @@
-This is an experimental RabbitMQ plugin to provide SNMP statistics.  It has yet to see production use.
+This is an experimental RabbitMQ plugin to provide SNMP statistics.
 
 
 BUILD INSTRUCTIONS:
@@ -52,5 +52,5 @@ Notes:
 
 
 Contact:
-Scott Brooks <scott.brooks@epicadvertising.com>
+Brendan Doyle <brendan.doyle@epicadvertising.com>
 
